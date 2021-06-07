@@ -9,51 +9,25 @@ This is the [Go](http://golang.org) client library for
 instrumenting application code, and one for creating clients that talk to the
 Prometheus HTTP API.
 
-__This library requires Go1.7 or later.__
+__This library requires Go1.13 or later.__
 
-## Important note about releases, versioning, tagging, stability, and your favorite Go dependency management tool
+## Important note about releases and stability
 
-While our goal is to follow [Semantic Versioning](https://semver.org/), this
-repository is still pre-1.0.0. To quote the
-[Semantic Versioning spec](https://semver.org/#spec-item-4): “Anything may
-change at any time. The public API should not be considered stable.” We know
-that this is at odds with the widespread use of this library. However, just
-declaring something 1.0.0 doesn't make it 1.0.0. Instead, we are working
-towards a 1.0.0 release that actually deserves its major version number.
+This repository generally follows [Semantic
+Versioning](https://semver.org/). However, the API client in
+prometheus/client_golang/api/… is still considered experimental. Breaking
+changes of the API client will _not_ trigger a new major release. The same is
+true for selected other new features explicitly marked as **EXPERIMENTAL** in
+CHANGELOG.md.
 
-Having said that, we aim for always keeping the tip of master in a workable
-state and for only introducing ”mildly” breaking changes up to and including
-[v0.9.0](https://github.com/prometheus/client_golang/milestone/1). After that,
-a number of ”hard” breaking changes are planned, see the
-[v0.10.0 milestone](https://github.com/prometheus/client_golang/milestone/2),
-which should get the library much closer to 1.0.0 state.
-
-Dependency management in Go projects is still in flux, and there are many tools
-floating around. While [dep](https://golang.github.io/dep/) might develop into
-the de-facto standard tool, it is still officially experimental. The roadmap
-for this library has been laid out with a lot of sometimes painful experience
-in mind. We really cannot adjust it every other month to the needs of the
-currently most popular or most promising Go dependency management tool. The
-recommended course of action with dependency management tools is the following:
-
-- Do not expect strict post-1.0.0 semver semantics prior to the 1.0.0
-  release. If your dependency management tool expects strict post-1.0.0 semver
-  semantics, you have to wait. Sorry.
-- If you want absolute certainty, please lock to a specific commit. You can
-  also lock to tags, but please don't ask for more tagging. This would suggest
-  some release or stability testing procedure that simply is not in place. As
-  said above, we are aiming for stability of the tip of master, but if we
-  tagged every single commit, locking to tags would be the same as locking to
-  commits.
-- If you want to get the newer features and improvements and are willing to
-  take the minor risk of newly introduced bugs and “mild” breakage, just always
-  update to the tip of master (which is essentially the original idea of Go
-  dependency management). We recommend to not use features marked as
-  _deprecated_ in this case.
-- Once [v0.9.0](https://github.com/prometheus/client_golang/milestone/1) is
-  out, you could lock to v0.9.x to get bugfixes (and perhaps minor new
-  features) while avoiding the “hard” breakage that will come with post-0.9
-  features.
+Features that require breaking changes in the stable parts of the repository
+are being batched up and tracked in the [v2
+milestone](https://github.com/prometheus/client_golang/milestone/2). The v2
+development happens in a [separate
+branch](https://github.com/prometheus/client_golang/tree/dev-v2) for the time
+being. v2 releases off that branch will happen once sufficient stability is
+reached. In view of the widespread use of this repository, v1 and v2 will
+coexist for a while to enable a convenient transition.
 
 ## Instrumenting applications
 
@@ -62,8 +36,8 @@ recommended course of action with dependency management tools is the following:
 The
 [`prometheus` directory](https://github.com/prometheus/client_golang/tree/master/prometheus)
 contains the instrumentation library. See the
-[best practices section](http://prometheus.io/docs/practices/naming/) of the
-Prometheus documentation to learn more about instrumenting applications.
+[guide](https://prometheus.io/docs/guides/go-application/) on the Prometheus
+website to learn more about instrumenting applications.
 
 The
 [`examples` directory](https://github.com/prometheus/client_golang/tree/master/examples)
