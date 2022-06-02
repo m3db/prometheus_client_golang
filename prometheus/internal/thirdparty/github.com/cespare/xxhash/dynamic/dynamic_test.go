@@ -12,7 +12,7 @@ import (
 )
 
 // This is a cursory test that checks whether things work under dynamic linking.
-
+//nolint
 func TestMain(m *testing.M) {
 	args := []string{"build",
 		"-buildmode", "plugin",
