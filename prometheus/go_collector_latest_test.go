@@ -24,7 +24,7 @@ import (
 	"sync"
 	"testing"
 
-	dto "github.com/prometheus/client_model/go"
+	dto "github.com/m3db/prometheus_client_model/go"
 
 	"github.com/m3db/prometheus_client_golang/prometheus/internal"
 )

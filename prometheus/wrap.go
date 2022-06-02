@@ -21,7 +21,7 @@ import (
 	"github.com/golang/protobuf/proto"
 
 	"github.com/m3db/prometheus_client_golang/prometheus/internal"
-	dto "github.com/prometheus/client_model/go"
+	dto "github.com/m3db/prometheus_client_model/go"
 )
 
 // WrapRegistererWith returns a Registerer wrapping the provided

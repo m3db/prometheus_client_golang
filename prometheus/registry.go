@@ -28,9 +28,9 @@ import (
 	"github.com/m3db/prometheus_client_golang/prometheus/internal/thirdparty/github.com/cespare/xxhash"
 	//nolint:staticcheck // Ignore SA1019. Need to keep deprecated package for compatibility.
 	"github.com/golang/protobuf/proto"
-	"github.com/prometheus/common/expfmt"
+	"github.com/m3db/prometheus_common/expfmt"
 
-	dto "github.com/prometheus/client_model/go"
+	dto "github.com/m3db/prometheus_client_model/go"
 
 	"github.com/m3db/prometheus_client_golang/prometheus/internal"
 )

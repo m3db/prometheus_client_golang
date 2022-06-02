@@ -18,7 +18,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	dto "github.com/prometheus/client_model/go"
+	dto "github.com/m3db/prometheus_client_model/go"
 )
 
 // Gauge is a Metric that represents a single numerical value that can
@@ -278,7 +278,7 @@ type GaugeFunc interface {
 //
 // NewGaugeFunc is a good way to create an “info” style metric with a constant
 // value of 1. Example:
-// https://github.com/prometheus/common/blob/8558a5b7db3c84fa38b4766966059a7bd5bfa2ee/version/info.go#L36-L56
+// https://github.com/m3db/prometheus_common/blob/8558a5b7db3c84fa38b4766966059a7bd5bfa2ee/version/info.go#L36-L56
 func NewGaugeFunc(opts GaugeOpts, function func() float64) GaugeFunc {
 	return newValueFunc(NewDesc(
 		BuildFQName(opts.Namespace, opts.Subsystem, opts.Name),

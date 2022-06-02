@@ -22,7 +22,7 @@ import (
 	"runtime/metrics"
 	"strings"
 
-	"github.com/prometheus/common/model"
+	"github.com/m3db/prometheus_common/model"
 )
 
 // RuntimeMetricsToProm produces a Prometheus metric name from a runtime/metrics

@@ -24,7 +24,7 @@ import (
 	"github.com/m3db/prometheus_client_golang/prometheus/internal"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	dto "github.com/prometheus/client_model/go"
+	dto "github.com/m3db/prometheus_client_model/go"
 )
 
 // ValueType is an enumeration of metric types that represent a simple value.
