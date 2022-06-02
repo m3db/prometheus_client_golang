@@ -20,11 +20,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/prometheus/client_golang/prometheus"
+	"github.com/m3db/prometheus_client_golang/prometheus"
 )
 
 func TestLabelCheck(t *testing.T) {
 	scenarios := map[string]struct {
+		metricName    string // Defaults to "c".
 		varLabels     []string
 		constLabels   []string
 		curriedLabels []string
@@ -48,7 +49,7 @@ func TestLabelCheck(t *testing.T) {
 			curriedLabels: []string{},
 			ok:            true,
 		},
-		"cade and method as var labels": {
+		"code and method as var labels": {
 			varLabels:     []string{"method", "code"},
 			constLabels:   []string{},
 			curriedLabels: []string{},
@@ -59,6 +60,12 @@ func TestLabelCheck(t *testing.T) {
 			constLabels:   []string{"foo", "bar"},
 			curriedLabels: []string{"dings", "bums"},
 			ok:            true,
+		},
+		"all labels used with an invalid const label name": {
+			varLabels:     []string{"code", "method"},
+			constLabels:   []string{"in-valid", "bar"},
+			curriedLabels: []string{"dings", "bums"},
+			ok:            false,
 		},
 		"unsupported var label": {
 			varLabels:     []string{"foo"},
@@ -96,17 +103,35 @@ func TestLabelCheck(t *testing.T) {
 			curriedLabels: []string{"method"},
 			ok:            false,
 		},
+		"invalid name and otherwise empty": {
+			metricName:    "in-valid",
+			varLabels:     []string{},
+			constLabels:   []string{},
+			curriedLabels: []string{},
+			ok:            false,
+		},
+		"invalid name with all the otherwise valid labels": {
+			metricName:    "in-valid",
+			varLabels:     []string{"code", "method"},
+			constLabels:   []string{"foo", "bar"},
+			curriedLabels: []string{"dings", "bums"},
+			ok:            false,
+		},
 	}
 
 	for name, sc := range scenarios {
 		t.Run(name, func(t *testing.T) {
+			metricName := sc.metricName
+			if metricName == "" {
+				metricName = "c"
+			}
 			constLabels := prometheus.Labels{}
 			for _, l := range sc.constLabels {
 				constLabels[l] = "dummy"
 			}
 			c := prometheus.NewCounterVec(
 				prometheus.CounterOpts{
-					Name:        "c",
+					Name:        metricName,
 					Help:        "c help",
 					ConstLabels: constLabels,
 				},
@@ -114,12 +139,13 @@ func TestLabelCheck(t *testing.T) {
 			)
 			o := prometheus.ObserverVec(prometheus.NewHistogramVec(
 				prometheus.HistogramOpts{
-					Name:        "c",
+					Name:        metricName,
 					Help:        "c help",
 					ConstLabels: constLabels,
 				},
 				append(sc.varLabels, sc.curriedLabels...),
 			))
+			//nolint:typecheck // Ignore declared but unused error.
 			for _, l := range sc.curriedLabels {
 				c = c.MustCurryWith(prometheus.Labels{l: "dummy"})
 				o = o.MustCurryWith(prometheus.Labels{l: "dummy"})
@@ -173,6 +199,122 @@ func TestLabelCheck(t *testing.T) {
 				}
 				if gotMethod != wantMethod {
 					t.Errorf("wanted method=%t for observer, got method=%t", wantMethod, gotMethod)
+				}
+			}
+		})
+	}
+}
+
+func TestLabels(t *testing.T) {
+	scenarios := map[string]struct {
+		varLabels    []string
+		reqMethod    string
+		respStatus   int
+		extraMethods []string
+		wantLabels   prometheus.Labels
+		ok           bool
+	}{
+		"empty": {
+			varLabels:  []string{},
+			wantLabels: emptyLabels,
+			reqMethod:  "GET",
+			respStatus: 200,
+			ok:         true,
+		},
+		"code as single var label": {
+			varLabels:  []string{"code"},
+			reqMethod:  "GET",
+			respStatus: 200,
+			wantLabels: prometheus.Labels{"code": "200"},
+			ok:         true,
+		},
+		"code as single var label and out-of-range code": {
+			varLabels:  []string{"code"},
+			reqMethod:  "GET",
+			respStatus: 99,
+			wantLabels: prometheus.Labels{"code": "unknown"},
+			ok:         true,
+		},
+		"code as single var label and in-range but unrecognized code": {
+			varLabels:  []string{"code"},
+			reqMethod:  "GET",
+			respStatus: 308,
+			wantLabels: prometheus.Labels{"code": "308"},
+			ok:         true,
+		},
+		"method as single var label": {
+			varLabels:  []string{"method"},
+			reqMethod:  "GET",
+			respStatus: 200,
+			wantLabels: prometheus.Labels{"method": "get"},
+			ok:         true,
+		},
+		"method as single var label and unknown method": {
+			varLabels:  []string{"method"},
+			reqMethod:  "CUSTOM_METHOD",
+			respStatus: 200,
+			wantLabels: prometheus.Labels{"method": "unknown"},
+			ok:         true,
+		},
+		"code and method as var labels": {
+			varLabels:  []string{"method", "code"},
+			reqMethod:  "GET",
+			respStatus: 200,
+			wantLabels: prometheus.Labels{"method": "get", "code": "200"},
+			ok:         true,
+		},
+		"method as single var label with extra methods specified": {
+			varLabels:    []string{"method"},
+			reqMethod:    "CUSTOM_METHOD",
+			respStatus:   200,
+			extraMethods: []string{"CUSTOM_METHOD", "CUSTOM_METHOD_1"},
+			wantLabels:   prometheus.Labels{"method": "custom_method"},
+			ok:           true,
+		},
+		"all labels used with an unknown method and out-of-range code": {
+			varLabels:  []string{"code", "method"},
+			reqMethod:  "CUSTOM_METHOD",
+			respStatus: 99,
+			wantLabels: prometheus.Labels{"method": "unknown", "code": "unknown"},
+			ok:         false,
+		},
+	}
+	checkLabels := func(labels []string) (gotCode bool, gotMethod bool) {
+		for _, label := range labels {
+			switch label {
+			case "code":
+				gotCode = true
+			case "method":
+				gotMethod = true
+			default:
+				panic("metric partitioned with non-supported labels for this test")
+			}
+		}
+		return
+	}
+	equalLabels := func(gotLabels, wantLabels prometheus.Labels) bool {
+		if len(gotLabels) != len(wantLabels) {
+			return false
+		}
+		for ln, lv := range gotLabels {
+			olv, ok := wantLabels[ln]
+			if !ok {
+				return false
+			}
+			if olv != lv {
+				return false
+			}
+		}
+		return true
+	}
+
+	for name, sc := range scenarios {
+		t.Run(name, func(t *testing.T) {
+			if sc.ok {
+				gotCode, gotMethod := checkLabels(sc.varLabels)
+				gotLabels := labels(gotCode, gotMethod, sc.reqMethod, sc.respStatus, sc.extraMethods...)
+				if !equalLabels(gotLabels, sc.wantLabels) {
+					t.Errorf("wanted labels=%v for counter, got code=%v", sc.wantLabels, gotLabels)
 				}
 			}
 		})
@@ -294,6 +436,7 @@ func (t *testFlusher) Flush()                    { t.flushCalled = true }
 func TestInterfaceUpgrade(t *testing.T) {
 	w := &testResponseWriter{}
 	d := newDelegator(w, nil)
+	//nolint:staticcheck // Ignore SA1019. http.CloseNotifier is deprecated but we keep it here to not break existing users.
 	d.(http.CloseNotifier).CloseNotify()
 	if !w.closeNotifyCalled {
 		t.Error("CloseNotify not called")
@@ -312,6 +455,7 @@ func TestInterfaceUpgrade(t *testing.T) {
 
 	f := &testFlusher{}
 	d = newDelegator(f, nil)
+	//nolint:staticcheck // Ignore SA1019. http.CloseNotifier is deprecated but we keep it here to not break existing users.
 	if _, ok := d.(http.CloseNotifier); ok {
 		t.Error("delegator unexpectedly implements http.CloseNotifier")
 	}

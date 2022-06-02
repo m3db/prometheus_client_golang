@@ -18,55 +18,57 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"math"
 	"math/rand"
 	"net/http"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/m3db/prometheus_client_golang/prometheus"
+	"github.com/m3db/prometheus_client_golang/prometheus/collectors"
+	"github.com/m3db/prometheus_client_golang/prometheus/promhttp"
 )
 
-var (
-	addr              = flag.String("listen-address", ":8080", "The address to listen on for HTTP requests.")
-	uniformDomain     = flag.Float64("uniform.domain", 0.0002, "The domain for the uniform distribution.")
-	normDomain        = flag.Float64("normal.domain", 0.0002, "The domain for the normal distribution.")
-	normMean          = flag.Float64("normal.mean", 0.00001, "The mean for the normal distribution.")
-	oscillationPeriod = flag.Duration("oscillation-period", 10*time.Minute, "The duration of the rate oscillation period.")
-)
-
-var (
-	// Create a summary to track fictional interservice RPC latencies for three
-	// distinct services with different latency distributions. These services are
-	// differentiated via a "service" label.
-	rpcDurations = prometheus.NewSummaryVec(
-		prometheus.SummaryOpts{
-			Name:       "rpc_durations_seconds",
-			Help:       "RPC latency distributions.",
-			Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
-		},
-		[]string{"service"},
+func main() {
+	var (
+		addr              = flag.String("listen-address", ":8080", "The address to listen on for HTTP requests.")
+		uniformDomain     = flag.Float64("uniform.domain", 0.0002, "The domain for the uniform distribution.")
+		normDomain        = flag.Float64("normal.domain", 0.0002, "The domain for the normal distribution.")
+		normMean          = flag.Float64("normal.mean", 0.00001, "The mean for the normal distribution.")
+		oscillationPeriod = flag.Duration("oscillation-period", 10*time.Minute, "The duration of the rate oscillation period.")
 	)
-	// The same as above, but now as a histogram, and only for the normal
-	// distribution. The buckets are targeted to the parameters of the
-	// normal distribution, with 20 buckets centered on the mean, each
-	// half-sigma wide.
-	rpcDurationsHistogram = prometheus.NewHistogram(prometheus.HistogramOpts{
-		Name:    "rpc_durations_histogram_seconds",
-		Help:    "RPC latency distributions.",
-		Buckets: prometheus.LinearBuckets(*normMean-5**normDomain, .5**normDomain, 20),
-	})
-)
 
-func init() {
+	flag.Parse()
+
+	var (
+		// Create a summary to track fictional interservice RPC latencies for three
+		// distinct services with different latency distributions. These services are
+		// differentiated via a "service" label.
+		rpcDurations = prometheus.NewSummaryVec(
+			prometheus.SummaryOpts{
+				Name:       "rpc_durations_seconds",
+				Help:       "RPC latency distributions.",
+				Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
+			},
+			[]string{"service"},
+		)
+		// The same as above, but now as a histogram, and only for the normal
+		// distribution. The buckets are targeted to the parameters of the
+		// normal distribution, with 20 buckets centered on the mean, each
+		// half-sigma wide.
+		rpcDurationsHistogram = prometheus.NewHistogram(prometheus.HistogramOpts{
+			Name:    "rpc_durations_histogram_seconds",
+			Help:    "RPC latency distributions.",
+			Buckets: prometheus.LinearBuckets(*normMean-5**normDomain, .5**normDomain, 20),
+		})
+	)
+
 	// Register the summary and the histogram with Prometheus's default registry.
 	prometheus.MustRegister(rpcDurations)
 	prometheus.MustRegister(rpcDurationsHistogram)
-}
-
-func main() {
-	flag.Parse()
+	// Add Go module build info.
+	prometheus.MustRegister(collectors.NewBuildInfoCollector())
 
 	start := time.Now()
 
@@ -87,7 +89,15 @@ func main() {
 		for {
 			v := (rand.NormFloat64() * *normDomain) + *normMean
 			rpcDurations.WithLabelValues("normal").Observe(v)
-			rpcDurationsHistogram.Observe(v)
+			// Demonstrate exemplar support with a dummy ID. This
+			// would be something like a trace ID in a real
+			// application.  Note the necessary type assertion. We
+			// already know that rpcDurationsHistogram implements
+			// the ExemplarObserver interface and thus don't need to
+			// check the outcome of the type assertion.
+			rpcDurationsHistogram.(prometheus.ExemplarObserver).ObserveWithExemplar(
+				v, prometheus.Labels{"dummyID": fmt.Sprint(rand.Intn(100000))},
+			)
 			time.Sleep(time.Duration(75*oscillationFactor()) * time.Millisecond)
 		}
 	}()
@@ -101,6 +111,12 @@ func main() {
 	}()
 
 	// Expose the registered metrics via HTTP.
-	http.Handle("/metrics", promhttp.Handler())
+	http.Handle("/metrics", promhttp.HandlerFor(
+		prometheus.DefaultGatherer,
+		promhttp.HandlerOpts{
+			// Opt into OpenMetrics to support exemplars.
+			EnableOpenMetrics: true,
+		},
+	))
 	log.Fatal(http.ListenAndServe(*addr, nil))
 }
