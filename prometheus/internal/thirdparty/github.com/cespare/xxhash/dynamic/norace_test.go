@@ -3,4 +3,4 @@
 
 package main
 
-const compileWithRace = true
+const compileWithRace = false
