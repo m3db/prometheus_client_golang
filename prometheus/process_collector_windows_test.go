@@ -19,7 +19,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/prometheus/common/expfmt"
+	"github.com/m3db/prometheus_common/expfmt"
 )
 
 func TestWindowsProcessCollector(t *testing.T) {

@@ -21,9 +21,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/prometheus/common/expfmt"
+	"github.com/m3db/prometheus_common/expfmt"
 
-	dto "github.com/prometheus/client_model/go"
+	dto "github.com/m3db/prometheus_client_model/go"
 )
 
 // A Linter is a Prometheus metrics linter.  It identifies issues with metric

@@ -25,7 +25,7 @@ import (
 	"time"
 
 	"github.com/m3db/prometheus_client_golang/prometheus"
-	dto "github.com/prometheus/client_model/go"
+	dto "github.com/m3db/prometheus_client_model/go"
 )
 
 type errorCollector struct{}

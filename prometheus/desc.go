@@ -24,9 +24,9 @@ import (
 
 	//nolint:staticcheck // Ignore SA1019. Need to keep deprecated package for compatibility.
 	"github.com/golang/protobuf/proto"
-	"github.com/prometheus/common/model"
+	"github.com/m3db/prometheus_common/model"
 
-	dto "github.com/prometheus/client_model/go"
+	dto "github.com/m3db/prometheus_client_model/go"
 )
 
 // Desc is the descriptor used by every Prometheus Metric. It is essentially

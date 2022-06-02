@@ -25,10 +25,10 @@ import (
 	"sort"
 	"time"
 
-	"github.com/prometheus/common/expfmt"
-	"github.com/prometheus/common/model"
+	"github.com/m3db/prometheus_common/expfmt"
+	"github.com/m3db/prometheus_common/model"
 
-	dto "github.com/prometheus/client_model/go"
+	dto "github.com/m3db/prometheus_client_model/go"
 
 	"github.com/m3db/prometheus_client_golang/prometheus"
 )

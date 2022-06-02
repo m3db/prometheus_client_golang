@@ -16,7 +16,7 @@ package prometheus
 import (
 	"testing"
 
-	dto "github.com/prometheus/client_model/go"
+	dto "github.com/m3db/prometheus_client_model/go"
 )
 
 func TestTimerObserve(t *testing.T) {
