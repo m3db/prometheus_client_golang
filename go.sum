@@ -156,6 +156,8 @@ github.com/m3db/prometheus_common v0.34.5-0.20220603164409-76eb9b921650/go.mod h
 github.com/m3db/prometheus_common v0.34.5-0.20220603164832-70f043edf99e/go.mod h1:Pf+7yPHChEsThLFaUB/ZD0/KxMLK+UYW/QVlWJ1uAyY=
 github.com/m3db/prometheus_common v0.34.5 h1:VnMnbNEHTHRxeXBq3ecjJpzZEAYVm0Xb3dO7MheTOxE=
 github.com/m3db/prometheus_common v0.34.5/go.mod h1:PlGkYJxacZY9hjtZh9SyjK+CR3aHh9nm1jcHfUUvojI=
+github.com/m3db/prometheus_common v0.34.6 h1:ZeH5JJNs8kFag+y0iW5LyHRpSwApimYFk74uslVbBhI=
+github.com/m3db/prometheus_common v0.34.6/go.mod h1:y0334xwXc0gsrWoQfffLgbmx9TTw2BkrrhBC7iz3zEs=
 github.com/m3db/prometheus_procfs v0.8.1/go.mod h1:N8lv8fLh3U3koZx1Bnisj60GYUMDpWb09x1R+dmMOJo=
 github.com/matttproud/golang_protobuf_extensions v1.0.1 h1:4hp9jkHxhMHkqkrB3Ix0jegS5sx/RkqARlsWZ6pIwiU=
 github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5Ld7szi9bcBfOoFv/3dc6xSMkL2PC0=
