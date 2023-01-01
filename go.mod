@@ -7,8 +7,8 @@ require (
 	github.com/json-iterator/go v1.1.12
 	github.com/m3db/prometheus_client_model v0.2.1
 	github.com/m3db/prometheus_common v0.34.6
-	github.com/prometheus/procfs v0.7.3
-	golang.org/x/sys v0.0.0-20220328115105-d36c6a25d886
+	github.com/prometheus/procfs v0.9.0
+	golang.org/x/sys v0.3.0
 	google.golang.org/protobuf v1.27.1
 )
 
